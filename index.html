@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory Arena 🎭</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #101426, #1b2140);
+  color: white;
+  display: flex;
+  justify-content: center;
+  padding: 30px 15px;
+}
+
+.app {
+  width: 100%;
+  max-width: 760px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 32px;
+}
+
+.subtitle {
+  color: #aeb5d0;
+  margin-top: 5px;
+}
+
+.stats {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  background: #252c4d;
+  padding: 9px 12px;
+  border-radius: 12px;
+  font-weight: bold;
+}
+
+.progress-container {
+  height: 10px;
+  background: #252c4d;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+
+.progress {
+  height: 100%;
+  width: 0%;
+  background: #72e6a7;
+  transition: width 0.3s;
+}
+
+.level {
+  text-align: right;
+  color: #9da6c5;
+  font-size: 13px;
+  margin-bottom: 15px;
+}
+
+.card {
+  background: #191f38;
+  border: 1px solid #303858;
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 12px;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+button,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  border: 1px solid #394261;
+  background: #252c4d;
+  color: white;
+  padding: 11px 15px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: bold;
+  min-height: 44px;
+}
+
+button:hover {
+  filter: brightness(1.15);
+}
+
+button.primary {
+  background: #72e6a7;
+  color: #101426;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+textarea {
+  width: 100%;
+  min-height: 190px;
+  resize: vertical;
+  padding: 14px;
+  background: #101426;
+  color: white;
+  border: 1px solid #394261;
+  border-radius: 12px;
+  line-height: 1.5;
+}
+
+select {
+  width: 100%;
+  padding: 10px;
+  background: #101426;
+  color: white;
+  border: 1px solid #394261;
+  border-radius: 10px;
+}
+
+.mode {
+  color: #9da6c5;
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.prompt {
+  font-size: 20px;
+  line-height: 1.6;
+  min-height: 100px;
+  margin: 15px 0;
+}
+
+.cue {
+  text-align: center;
+  font-size: 30px;
+  letter-spacing: 4px;
+  padding: 20px 5px;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.feedback {
+  min-height: 30px;
+  margin-top: 12px;
+  font-weight: bold;
+}
+
+.run-info {
+  font-size: 21px;
+  font-weight: bold;
+}
+
+.small {
+  color: #9da6c5;
+  font-size: 13px;
+  margin-top: 5px;
+}
+
+.settings {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.setting {
+  background: #101426;
+  border: 1px solid #303858;
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.setting label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 7px;
+}
+
+.hidden {
+  display: none;
+}
+
+.final {
+  text-align: center;
+}
+
+.final-icon {
+  font-size: 60px;
+}
+
+.final-title {
+  font-size: 27px;
+  font-weight: bold;
+}
+
+.toast {
+  background: #101426;
+  border: 1px solid #303858;
+  padding: 13px;
+  border-radius: 12px;
+  margin: 15px 0;
+}
+
+@media (max-width: 550px) {
+  .settings {
+    grid-template-columns: 1fr;
+  }
+
+  h1 {
+    font-size: 26px;
+  }
+
+  .prompt {
+    font-size: 18px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<header>
+  <div>
+    <h1>🎭 Memory Arena</h1>
+    <div class="subtitle">Train your lines like a game.</div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">⭐ <span id="xp">0</span></div>
+    <div class="stat">🔥 <span id="streak">0</span></div>
+    <div class="stat">❤️ <span id="hearts">3</span></div>
+  </div>
+</header>
+
+<div class="progress-container">
+  <div class="progress" id="progress"></div>
+</div>
+
+<div class="level" id="level">
+  Ready
+</div>
+
+<div class="tabs">
+  <button id="playTab" class="primary">🎮 Play</button>
+  <button id="editTab">✏️ Script</button>
+</div>
+
+<!-- SCRIPT EDITOR -->
+
+<section id="editor" class="card">
+
+  <div class="mode">
+    SCRIPT BUILDER
+  </div>
+
+  <p>
+    Paste your monologue, speech, poem, or lines below.
+    Put each line or beat on a separate line.
+  </p>
+
+  <textarea id="scriptInput"
+    placeholder="Paste your monologue here..."></textarea>
+
+  <div class="settings">
+
+    <div class="setting">
+      <label for="difficulty">
+        Difficulty
+      </label>
+
+      <select id="difficulty">
+        <option value="easy">🌱 Warm-up</option>
+        <option value="normal" selected>🔥 Performer</option>
+        <option value="hard">💀 Challenge</option>
+      </select>
+    </div>
+
+    <div class="setting">
+      <label for="trainingMode">
+        Training
+      </label>
+
+      <select id="trainingMode">
+        <option value="mixed" selected>🎲 Mixed</option>
+        <option value="recall">🧠 Recall</option>
+        <option value="gaps">🕳️ Missing Words</option>
+        <option value="cues">🔤 Cue Initials</option>
+      </select>
+    </div>
+
+  </div>
+
+  <div class="buttons">
+
+    <button id="startButton" class="primary">
+      🚀 Start Training
+    </button>
+
+    <button id="demoButton">
+      ✨ Load Demo
+    </button>
+
+  </div>
+
+  <div class="small">
+    💡 Tip: shorter chunks make memorization easier.
+  </div>
+
+</section>
+
+<!-- GAME -->
+
+<section id="game" class="hidden">
+
+  <div class="card">
+
+    <div class="mode" id="modeLabel">
+      RECALL
+    </div>
+
+    <div class="prompt" id="prompt">
+    </div>
+
+    <div class="buttons">
+
+      <button id="hideButton">
+        🙈 Hide
+      </button>
+
+      <button id="hintButton">
+        💡 Hint (-5 XP)
+      </button>
+
+      <button id="rememberButton" class="primary">
+        ✅ Nailed It
+      </button>
+
+    </div>
+
+    <div class="feedback" id="feedback">
+    </div>
+
+  </div>
+
+  <div class="card">
+
+    <div class="mode">
+      CURRENT RUN
+    </div>
+
+    <div class="run-info" id="runInfo">
+    </div>
+
+    <div class="small" id="runSub">
+    </div>
+
+  </div>
+
+  <div class="buttons">
+
+    <button id="nextButton">
+      ➡️ Next
+    </button>
+
+    <button id="restartButton">
+      🔄 Restart
+    </button>
+
+    <button id="editBackButton">
+      ✏️ Change Script
+    </button>
+
+  </div>
+
+</section>
+
+<!-- FINAL BOSS -->
+
+<section id="finish" class="card final hidden">
+
+  <div class="final-icon">
+    🏆
+  </div>
+
+  <div class="final-title">
+    FINAL BOSS UNLOCKED
+  </div>
+
+  <p>
+    Perform the entire monologue from memory.
+    No text. No hints. Just you. 🎭
+  </p>
+
+  <div class="buttons" style="justify-content:center">
+
+    <button id="bossButton" class="primary">
+      🔥 Begin Final Performance
+    </button>
+
+  </div>
+
+</section>
+
+</div>
+
+<script>
+
+const demoText = `Not potato chips—chocolate! Only the most important food group!
+Didn’t your mothers ever make you chocolate chip cookies?
+Like, when you’re sad, she bakes them fresh, pours you some milk, and sits with you until everything feels a little less terrible.
+My mom always says a warm cookie can’t solve a problem, but it can make you brave enough to face it.
+Sometimes she even lets me lick the spoon, although she pretends she doesn’t notice.
+It’s silly, I guess, but that’s what home feels like to me: warm chocolate, a messy kitchen, and someone who knows you’re upset before you say a word.
+Wait...why are you all looking at me like that? Didn’t your mothers ever do anything like that for you?`;
+
+let lines = [];
+
+let currentLine = 0;
+
+let xp = 0;
+
+let streak = 0;
+
+let hearts = 3;
+
+let trainingMode = "mixed";
+
+let difficulty = "normal";
+
+let currentChallenge = "recall";
+
+let usedHint = false;
+
+const $ = id => document.getElementById(id);
+
+
+/* -------------------------
+   SCRIPT SETUP
+------------------------- */
+
+function parseScript() {
+
+  lines = $("scriptInput")
+    .value
+    .split(/\n+/)
+    .map(line => line.trim())
+    .filter(line => line.length > 0);
+
+  return lines.length > 0;
+}
+
+
+/* -------------------------
+   RANDOM CHALLENGE
+------------------------- */
+
+function chooseChallenge() {
+
+  if (trainingMode !== "mixed") {
+    return trainingMode;
+  }
+
+  if (difficulty === "easy") {
+
+    return Math.random() < 0.5
+      ? "recall"
+      : "gaps";
+
+  }
+
+  if (difficulty === "hard") {
+
+    return Math.random() < 0.5
+      ? "gaps"
+      : "cues";
+
+  }
+
+  const choices = [
+    "recall",
+    "gaps",
+    "cues"
+  ];
+
+  return choices[
+    Math.floor(Math.random() * choices.length)
+  ];
+}
+
+
+/* -------------------------
+   INITIAL LETTER CUES
+------------------------- */
+
+function getInitials(text) {
+
+  return text
+    .replace(/[^A-Za-zÀ-ÿ0-9 ]/g, "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(word => word[0].toUpperCase())
+    .join(" • ");
+}
+
+
+/* -------------------------
+   MISSING WORDS
+------------------------- */
+
+function createGaps(text) {
+
+  const words = text.split(/\s+/);
+
+  let percentage;
+
+  if (difficulty === "easy") {
+    percentage = 0.18;
+  }
+
+  else if (difficulty === "hard") {
+    percentage = 0.42;
+  }
+
+  else {
+    percentage = 0.28;
+  }
+
+  const amount = Math.max(
+    1,
+    Math.ceil(words.length * percentage)
+  );
+
+  const missing = new Set();
+
+  while (
+    missing.size <
+    Math.min(amount, words.length)
+  ) {
+
+    missing.add(
+      Math.floor(Math.random() * words.length)
+    );
+
+  }
+
+  return words
+    .map((word, index) =>
+      missing.has(index)
+        ? "_____"
+        : word
+    )
+    .join(" ");
+}
+
+
+/* -------------------------
+   RENDER GAME
+------------------------- */
+
+function renderGame() {
+
+  if (!lines.length) return;
+
+  currentChallenge =
+    chooseChallenge();
+
+  usedHint = false;
+
+  const text =
+    lines[currentLine];
+
+  if (currentChallenge === "recall") {
+
+    $("modeLabel").textContent =
+      "🧠 RECALL";
+
+    $("prompt").textContent =
+      text;
+
+  }
+
+  else if (currentChallenge === "gaps") {
+
+    $("modeLabel").textContent =
+      "🕳️ MISSING WORDS";
+
+    $("prompt").textContent =
+      createGaps(text);
+
+  }
+
+  else {
+
+    $("modeLabel").textContent =
+      "🔤 CUE INITIALS";
+
+    $("prompt").innerHTML =
+      `<div class="cue">
+        ${getInitials(text)}
+      </div>`;
+
+  }
+
+  const progress =
+    (currentLine / lines.length) * 100;
+
+  $("progress").style.width =
+    progress + "%";
+
+  $("level").textContent =
+    `CHALLENGE ${currentLine + 1} / ${lines.length}`;
+
+  $("runInfo").textContent =
+    `Line ${currentLine + 1} of ${lines.length}`;
+
+  if (difficulty === "easy") {
+
+    $("runSub").textContent =
+      "Warm-up mode 🌱";
+
+  }
+
+  else if (difficulty === "hard") {
+
+    $("runSub").textContent =
+      "Challenge mode 💀";
+
+  }
+
+  else {
+
+    $("runSub").textContent =
+      "Performer mode 🔥";
+
+  }
+
+  updateStats();
+}
+
+
+/* -------------------------
+   STATS
+------------------------- */
+
+function updateStats() {
+
+  $("xp").textContent = xp;
+
+  $("streak").textContent = streak;
+
+  $("hearts").textContent = hearts;
+}
+
+
+/* -------------------------
+   FEEDBACK
+------------------------- */
+
+function feedback(message) {
+
+  $("feedback").textContent =
+    message;
+
+}
+
+
+/* -------------------------
+   START GAME
+------------------------- */
+
+function startGame() {
+
+  if (!parseScript()) {
+
+    feedback(
+      "⚠️ Paste some text first!"
+    );
+
+    return;
+  }
+
+  currentLine = 0;
+
+  xp = 0;
+
+  streak = 0;
+
+  hearts = 3;
+
+  trainingMode =
+    $("trainingMode").value;
+
+  difficulty =
+    $("difficulty").value;
+
+  $("editor")
+    .classList.add("hidden");
+
+  $("game")
+    .classList.remove("hidden");
+
+  $("finish")
+    .classList.add("hidden");
+
+  feedback(
+    "🎮 Run started! Say the line out loud!"
+  );
+
+  renderGame();
+}
+
+
+/* -------------------------
+   LOAD DEMO
+------------------------- */
+
+$("demoButton")
+.addEventListener(
+  "click",
+  () => {
+
+    $("scriptInput").value =
+      demoText;
+
+    feedback(
+      "✨ Demo loaded! Press Start Training."
+    );
+
+  }
+);
+
+
+/* -------------------------
+   START
+------------------------- */
+
+$("startButton")
+.addEventListener(
+  "click",
+  startGame
+);
+
+
+/* -------------------------
+   HIDE TEXT
+------------------------- */
+
+$("hideButton")
+.addEventListener(
+  "click",
+  () => {
+
+    $("prompt").innerHTML =
+      `<div class="cue">
+        ${getInitials(lines[currentLine])}
+      </div>`;
+
+    feedback(
+      "🙈 Text hidden! Perform the line!"
+    );
+
+  }
+);
+
+
+/* -------------------------
+   HINT
+------------------------- */
+
+$("hintButton")
+.addEventListener(
+  "click",
+  () => {
+
+    if (usedHint) {
+
+      feedback(
+        "💡 You already used your hint!"
+      );
+
+      return;
+    }
+
+    usedHint = true;
+
+    xp =
+      Math.max(0, xp - 5);
+
+    const words =
+      lines[currentLine]
+        .split(/\s+/);
+
+    const hintAmount =
+      Math.max(
+        1,
+        Math.ceil(words.length * 0.22)
+      );
+
+    feedback(
+      "💡 Hint: " +
+      words
+        .slice(0, hintAmount)
+        .join(" ") +
+      " …"
+    );
+
+    updateStats();
+
+  }
+);
+
+
+/* -------------------------
+   SUCCESS
+------------------------- */
+
+$("rememberButton")
+.addEventListener(
+  "click",
+  () => {
+
+    let earned =
+      15 +
+      streak * 3;
+
+    if (
+      currentChallenge === "gaps"
+    ) {
+
+      earned += 5;
+
+    }
+
+    if (
+      currentChallenge === "cues"
+    ) {
+
+      earned += 10;
+
+    }
+
+    if (usedHint) {
+
+      earned =
+        Math.max(
+          5,
+          earned - 5
+        );
+
+    }
+
+    xp += earned;
+
+    streak++;
+
+    feedback(
+      `🔥 Great! +${earned} XP • ${streak}× combo`
+    );
+
+    updateStats();
+
+  }
+);
+
+
+/* -------------------------
+   NEXT
+------------------------- */
+
+$("nextButton")
+.addEventListener(
+  "click",
+  () => {
+
+    if (
+      streak === 0 &&
+      currentLine > 0
+    ) {
+
+      hearts--;
+
+      feedback(
+        hearts > 0
+          ? "❤️ You lost a heart!"
+          : "💥 Run over! Restart!"
+      );
+
+      updateStats();
+
+      if (hearts <= 0) {
+
+        $("nextButton")
+          .disabled = true;
+
+        $("rememberButton")
+          .disabled = true;
+
+        return;
+      }
+
+    }
+
+    if (
+      currentLine <
+      lines.length - 1
+    ) {
+
+      currentLine++;
+
+      feedback("");
+
+      renderGame();
+
+    }
+
+    else {
+
+      $("game")
+        .classList.add("hidden");
+
+      $("finish")
+        .classList.remove("hidden");
+
+      $("progress")
+        .style.width = "100%";
+
+      xp += 50;
+
+      updateStats();
+
+    }
+
+  }
+);
+
+
+/* -------------------------
+   RESTART
+------------------------- */
+
+$("restartButton")
+.addEventListener(
+  "click",
+  () => {
+
+    currentLine = 0;
+
+    xp = 0;
+
+    streak = 0;
+
+    hearts = 3;
+
+    $("nextButton")
+      .disabled = false;
+
+    $("rememberButton")
+      .disabled = false;
+
+    feedback(
+      "🔄 New run!"
+    );
+
+    renderGame();
+
+  }
+);
+
+
+/* -------------------------
+   SCRIPT TAB
+------------------------- */
+
+$("editTab")
+.addEventListener(
+  "click",
+  () => {
+
+    $("game")
+      .classList.add("hidden");
+
+    $("finish")
+      .classList.add("hidden");
+
+    $("editor")
+      .classList.remove("hidden");
+
+    $("scriptInput").value =
+      lines.join("\n");
+
+  }
+);
+
+
+/* -------------------------
+   PLAY TAB
+------------------------- */
+
+$("playTab")
+.addEventListener(
+  "click",
+  () => {
+
+    $("editor")
+      .classList.add("hidden");
+
+    if (lines.length) {
+
+      $("game")
+        .classList.remove("hidden");
+
+    }
+
+  }
+);
+
+
+/* -------------------------
+   CHANGE SCRIPT
+------------------------- */
+
+$("editBackButton")
+.addEventListener(
+  "click",
+  () => {
+
+    $("game")
+      .classList.add("hidden");
+
+    $("finish")
+      .classList.add("hidden");
+
+    $("editor")
+      .classList.remove("hidden");
+
+    $("scriptInput").value =
+      lines.join("\n");
+
+  }
+);
+
+
+/* -------------------------
+   FINAL BOSS
+------------------------- */
+
+$("bossButton")
+.addEventListener(
+  "click",
+  () => {
+
+    $("finish").innerHTML = `
+
+      <div class="final-icon">
+        🎭🔥
+      </div>
+
+      <div class="final-title">
+        FINAL PERFORMANCE
+      </div>
+
+      <p>
+        Put the script somewhere you cannot see it.
+        Perform the entire piece from memory.
+      </p>
+
+      <div class="buttons"
+           style="justify-content:center">
+
+        <button
+          id="completeBoss"
+          class="primary">
+
+          🏆 I Finished
+
+        </button>
+
+        <button
+          id="oneMoreRun">
+
+          👀 One More Run
+
+        </button>
+
+      </div>
+
+    `;
+
+    $("completeBoss")
+      .addEventListener(
+        "click",
+        () => {
+
+          xp += 100;
+
+          $("finish").innerHTML = `
+
+            <div class="final-icon">
+              🏆🎭🏆
+            </div>
+
+            <div class="final-title">
+              MONOLOGUE MASTER!
+            </div>
+
+            <p>
+              You completed the Final Performance!
+            </p>
+
+            <div class="toast">
+
+              ⭐ Final XP:
+              ${xp}
+
+              <br><br>
+
+              🔥 Best combo:
+              ${streak}
+
+            </div>
+
+            <button
+              id="playAgain"
+              class="primary">
+
+              🔄 Play Again
+
+            </button>
+
+          `;
+
+          $("playAgain")
+            .addEventListener(
+              "click",
+              () => {
+
+                currentLine = 0;
+
+                xp = 0;
+
+                streak = 0;
+
+                hearts = 3;
+
+                $("finish")
+                  .classList.add("hidden");
+
+                $("game")
+                  .classList.remove("hidden");
+
+                renderGame();
+
+              }
+            );
+
+          updateStats();
+
+        }
+      );
+
+    $("oneMoreRun")
+      .addEventListener(
+        "click",
+        () => {
+
+          $("finish")
+            .classList.add("hidden");
+
+          $("game")
+            .classList.remove("hidden");
+
+          currentLine = 0;
+
+          renderGame();
+
+        }
+      );
+
+  }
+);
+
+
+/* -------------------------
+   PRELOAD DEMO
+------------------------- */
+
+$("scriptInput").value =
+  demoText;
+
+</script>
+
+</body>
+</html>
